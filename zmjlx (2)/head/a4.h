@@ -1,1 +1,0 @@
-extern char a4[38400];

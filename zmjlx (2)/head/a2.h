@@ -1,1 +1,0 @@
-extern char a2[38400];
