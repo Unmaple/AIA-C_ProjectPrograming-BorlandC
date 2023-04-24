@@ -1,2 +1,8 @@
 # AIA-C_ProjectPrograming-BorlandC
 AIA-C_ProjectPrograming-BorlandC
+本次发布支持动画的图形库 Mimage
+和基于该图形库的3D库 D3ROOM
+详细信息见docs
+函数介绍见注释和docs
+示例程序见example，为我们的C语言课程设计的成果，题目为屋顶光伏发电模拟
+请使用borlandC运行，dosbox和xp原生BC均可使用
