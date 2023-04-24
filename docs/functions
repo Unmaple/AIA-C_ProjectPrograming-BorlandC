@@ -1,0 +1,266 @@
+Mimage中
+
+函数名: int MR()；
+输入参数：无；
+函数描述：Memory_Render，从缓存绘制入显存，其中显存位置在			0xA0000000L,使用outportb()告诉硬件需要向显存输出数据并修改输出的	颜色界面。此处使用memcpy()以保证刷写速度，所以需要包含头文件		<string.h>。
+返回值：0；
+
+函数名: int ClrMR();；
+输入参数：无；
+函数描述：Clear Memory Render，将缓存清空，全部修改为默认颜色（目		前该颜色为绿色）；使用memset()，所以同上需要头文件string.h。
+返回值：0；
+
+函数名: int MRBk(unsigned Color)；；
+输入参数：unsigned char型变量Color，表示需要的缓存背景颜色；
+函数描述：Memory Render Background, 将缓存清空，全部修改为指定颜色Color；使用memset()，所以同上需要头文件string.h。
+返回值：0；
+
+函数名：int MRPixel(unsigned int x,unsigned int y,unsigned char Color);
+输入参数：需要修改的像素横纵坐标及需要修改成的颜色，数据格式如上。
+函数描述：Memory Render Pixel，将指定位置像素修改成指定颜色，输出到缓存中而并非显存，此为本函数与putpixel最大区别；目前测试本函数运行速度约为putpixel运行速度的13倍。
+返回值：0或1，非零值表示x,y越界；
+
+函数名：int MR8_1Bar(unsigned int x,unsigned int y,unsigned char Color);
+输入参数：需要画的8*1块的左侧第一个像素的横纵坐标（其实任意一个位置坐标均可，此函数将x向8倍数对齐；颜色Color，数据类型如上。
+函数描述：Memory Render 8*1 Bar，可以将横向的连续八个像素同时改变颜色，其执行速度与上述修改单像素函数相比更快，故大面积绘图时加速效果明显；
+返回值：0或1，非零值表示x，y越界；
+
+函数名：int MRHorizonLine(unsigned int x1,unsigned int x2,unsigned int y,unsigned char Color);
+输入参数：水平直线左侧横坐标，右侧横坐标及纵坐标；颜色Color，数据类型如上。
+函数描述：Memory Render Horizontal Line在指定位置绘制单一指定颜色的水平直线，使用MR8_1Bar函数加速，理想状态下相比MRPixel拥有8倍绘制速度，与putpixel相比近100倍绘制速度；
+返回值：0（使用的函数有判断是否越界，不会画出格，但可能卡死）；
+函数名：int MRSafeHorizonLine(unsigned int x1,unsigned int x2,unsigned int y,unsigned char Color);
+输入参数：水平直线左侧横坐标，右侧横坐标及纵坐标；颜色Color，数据类型如上。
+函数描述：Memory Render Safe Horizontal Line给上面的函数加了一层检测，避免越界和奇妙的bug
+返回值：0（使用的函数有判断是否越界，不会画出格，且不会卡死）；
+函数名：int MRVerticalLine(unsigned int x,unsigned int y1,unsigned int y2,unsigned char Color);；
+输入参数：Memory Render Vertical Line竖直直线上端纵坐标，下端纵坐标及横坐标；颜色Color，数据类型如上。
+函数描述：在指定位置绘制单一指定颜色的竖直直线，没有加速优化，需要绘制大面积图形时尽量避免；
+返回值：0；
+
+函数名：int MRBar(unsigned int x1,unsigned int x2,unsigned int y1,unsigned int y2,unsigned char Color);
+输入参数：矩形左上角横纵坐标，右下角横纵坐标；颜色Color，数据类型如上。
+函数描述：Memory Render Bar在指定位置绘制单一指定颜色的实心矩形，可以用于绘制粗的水平或竖直直线；已使用MR8_1Bar加速。
+返回值：0；
+
+函数名：int MRRect(unsigned int x1,unsigned int x2,unsigned int y1,unsigned int y2,unsigned char Color);
+输入参数：矩形左上角横纵坐标，右下角横纵坐标；颜色Color，数据类型如上。
+函数描述：Memory Render Rectangle在指定位置绘制单一指定颜色的空心矩形；
+返回值：0；
+
+
+函数名：int MRLine(unsigned int x1,unsigned int y1,unsigned int x2,unsigned int y2,unsigned char Color);
+输入参数：直线起始点横纵坐标，终止点横纵坐标；颜色Color，数据类型如上。
+函数描述：Memory Render Line在指定位置绘制单一指定颜色的直线，运行速度较慢，建议不要用于填充颜色。内部整合有水平直线绘制，其中粗细为较宽方向上每个坐标有一个像素粗；
+返回值： 0；
+函数名：int MRBresenHamLineX(const int x1,const int y1,int x2,const int y2,const char Color);
+输入参数：直线起始点横纵坐标，终止点横纵坐标；颜色Color，数据类型如上。
+函数描述：Memory Render BresenHam Line与上述函数相似，但使用bresenham算法避免了浮点数的运算，仅需使用整形加减法即可完成绘制，此处斜率绝对值小于1；
+返回值： 0；
+函数名：int MRBresenHamLineY(const int x1,const int y1,int x2,const int y2,const char Color);
+输入参数：直线起始点横纵坐标，终止点横纵坐标；颜色Color，数据类型如上。
+函数描述：Memory Render BresenHam Line与上述函数相似，但使用bresenham算法避免了浮点数的运算，仅需使用整形加减法即可完成绘制，此处斜率绝对值大于1；
+函数名：int MROutLine(const int x1,const int y1,const int x2,const int y2,const unsigned char Color);
+输入参数：直线起始点横纵坐标，终止点横纵坐标；颜色Color，数据类型如上。
+函数描述：Memory Render Out Line与上述函数相似，但增加了“截取”功能以提升在起始终止点处于屏幕外时函数的鲁棒性和速度；
+
+函数名：int MRdbm(int x,int y,char *dbm)；
+输入参数：需要绘制的图像的左上角横纵坐标，dbm文件路径。
+函数描述：the Dictionary Bmp of Memory Render，快速写屏法贴图，将文件信息直接读取至缓存中，贴图具体操作可以参考image.c，其中有.bmp转化为.dbm的函数。
+返回值：0；
+
+函数名：int MRTriangle(const int x1,const int y1,const int x2,const int y2,const int x3,const int y3,const unsigned char Color);
+输入参数：三角形三个顶点的坐标；
+函数描述：Memory Render Triangle绘制纯色三角形，此处参考绘制直线（斜线）时算法绘制，保证画图时候不必过于担忧多边形；借助MRHorizonTriangle和MRRealTriangle函数进行实现（本体为检测坐标点并排序，正确调用此二绘图函数）；
+返回值：0； 
+函数名：int MRRealTriangle(const int x1,const int y1,const int x2,const int y2,const int x3,const int y3,const unsigned char Color,const char type);
+输入参数：三角形三个顶点的坐标；
+函数描述：Memory Render Real Triangle绘制一般位置的纯色三角形，此处参考绘制直线（斜线）时算法绘制，保证画图时候不必过于担忧多边形越界问题；借助MRHorizonLine函数进行实现；
+返回值：0；（仍在写作中）
+
+函数名：int MRHorizonTriangle(unsigned int x1,unsigned int y1，unsigned int x2,unsigned int y2，unsigned int x3,unsigned int y3，unsigned char Color);
+输入参数：其中一条边为水平线的三角形的三个顶点的坐标；
+函数描述：Memory Render Flat Triangle绘制一条边为水平线的纯色三角		形，此处参考绘制直线（斜线）时算法绘制，保证画图时候不必过于担忧		多边形点超出屏幕范围的问题（已做“截断”）；
+返回值：0；
+函数名：static int MR8_1Shadow(const unsigned int x,const unsigned int y,const unsigned char Color,const char ShadowType)
+输入参数：需要画的8*1块的左侧第一个像素的横纵坐标（其实任意一个位置坐标均可，此函数将x向8倍数对齐；颜色Color，数据类型如上。
+函数描述：Memory Render 8*1 Bar，可以将横向的连续八个像素中若干个同时改变颜色，其执行速度与上述修改单像素函数相比更快，故大面积绘图时加速效果明显，且可以绘制阴影效果（并不会完全遮住原来的对象）；
+返回值：0或1，非零值表示x，y越界；
+
+函数名：int MRHorizonShadowLine(const int x1,const int x2,const int y,const unsigned char Color,const char ShadowType);
+输入参数：端点坐标，颜色，阴影类型；
+函数描述：Memory Render HorizonShadowLine绘制间色水平线，可以绘制		阴影效果（并不会完全遮住原来的对象），本函数仅为下					MRHorizonTriangle的输入检测函数；
+返回值：0； 
+函数名：int MRRealHorizonShadowLine(const int x1,const int x2,const int y,const unsigned char Color,const char ShadowType);;
+输入参数：三角形三个顶点的坐标；
+函数描述：Memory Render HorizonShadowLine绘制间色水平线，可以绘制		阴影效果（并不会完全遮住原来的对象），此处参考绘制直线（斜线）时		算法绘制，使用类似输出字符库时的方法，类似MRPixel的实现以保证		绘制阴影时的速度；返回值：0；（仍在写作中）
+
+函数名：int MRHorizonTriangle(unsigned int x1,unsigned int y1，unsigned int x2,unsigned int y2，unsigned int x3,unsigned int y3，unsigned char Color);
+输入参数：其中一条边为水平线的三角形的三个顶点的坐标；
+函数描述：Memory Render Flat Triangle绘制一条边为水平线的纯色三角		形，此处参考绘制直线（斜线）时算法绘制，保证画图时候不必过于担忧		多边形点超出屏幕范围的问题（已做“截断”）；
+返回值：0；
+
+Extern 包含的四个char数组：
+在a1.c,a2.c,a3.c,a4.c四个源文件中，在对应头文件也有extern声明。此四数组构成可以存下全屏图像信息的缓存，以上函数均基于此缓存开发。
+
+
+
+
+D3ROOM中
+
+struct D3DOT
+{
+	int x;
+	int y;
+	int z;	
+};
+
+struct D3FullVectorMap//此处可以考虑使用链表，以数组形式对矢量图输出方要求太高
+{
+	unsigned int DotNum;
+	unsigned int LineNum;
+	unsigned int TriangleNum;
+	unsigned int TriangleQueuePos;
+	unsigned int ShadowTriangleNum;
+	unsigned int ShadowBackTriangleNum;
+	unsigned int WireNum;
+	unsigned int ShadowType;
+	
+	struct D3DOT DOTS[700];
+	struct D3DOT TredDOTS[700];
+	
+	unsigned int lines[500][2];
+	unsigned char lineColor[500];
+	
+	unsigned int triangles[500][3];
+	
+	unsigned char TriangleColor[500][4];//0为三角形自己的颜色，1为线01，2为线02，3为线12
+	unsigned int TriangleRenderQueue[500];
+	
+	unsigned int ShadowTriangle[80][3];//点数据一起存DOTS里
+	
+	
+	
+};
+
+struct TransformMatrix
+{
+	double P[4][4];
+
+};
+结构体名：D3DOT
+内含物如上
+存储点的坐标
+结构体名：D3FullVectorMap
+内含物如上
+存储3D模拟时的各项图形信息，包括转换前后点的坐标，线对应的点序号，三角形对应的点序号，三角形渲染队列对应的三角形序号，阴影三角形对应的点序号，电缆数量
+结构体名：TransformMatrix
+保存转化矩阵，其中转化矩阵主要用于视角转化，亦可用作双轴太阳能板的旋转
+函数名：int GenerateTransformMatrix(struct TransformMatrix *pTM,int Xita, int Fai, double Radius);
+输入参数：TM，俯仰角，旋转角，放大倍率；
+函数描述：生成对应方向对应缩放倍率的坐标转化矩阵（此处用于视角转化），先旋转再俯仰；
+返回值：0；
+函数名：int GenerateAnotherTransformMatrix(struct TransformMatrix *pTM,int Xita, int Fai);
+输入参数：TM，俯仰角，旋转角；
+函数描述：生成对应方向对应缩放倍率的坐标转化矩阵（此处用于双轴太阳能板旋转），先俯仰再旋转；
+返回值：0；
+struct D3DOT DotTransfer(struct TransformMatrix TM,struct D3DOT D,double Perspective);
+输入参数：TM，点对象，透视距离；
+函数描述：转化点坐标，用于需要直接绘图的对象；
+返回值：TM*D得到的点坐标（经过透视）；
+struct D3DOT DotTransferWithoutPers(const struct TransformMatrix TM,const struct D3DOT D);
+输入参数：TM，点对象；
+函数描述：转化点坐标,用于需要旋转但并不直接绘图的时候的转化；
+返回值：TM*D得到的点坐标（经过透视）；
+函数名：int D3FullVectorMapDotTransform(struct TransformMatrix TM,double Perspective);
+输入参数：坐标转换矩阵，透视距离；
+函数描述：将静态全局变量OriMap中的点统一进行转化；
+返回值：0；
+函数名：int CreateShadow(int TriangleOrder, float X0, float Z0, int FloorHeight)
+输入参数：需要投影的三角形序号，太阳方向,需要投影的面的高度；
+函数描述：在指定位置生成阴影三角形并保存入OriMap中；
+返回值：0；
+函数名：int CreateBackShadow(int TriangleOrder, float X0, float Z0, int FloorHeight)
+输入参数：需要投影的三角形序号，太阳方向,需要投影的面的高度；
+函数描述：在指定位置生成阴影三角形并保存入OriMap中，与上函数的区别为本函数生成的阴影三角形会在主要的对象绘制完成后画出；
+返回值：0；
+函数名：int DotShadow(const struct D3DOT D, float X0, float Z0, struct D3DOT *result, int FloorHeight);
+输入参数：需要投影的点，太阳方向,需要投影的面的高度，返回的点地址；
+函数描述：计算点的投影后结果。
+返回值：0；
+函数名：int ShadowReset();
+输入参数：无；
+函数描述：将阴影三角形的计数清零以顺利绘制新的阴影。
+返回值：0；
+函数名：int QueueReset();
+输入参数：无；
+函数描述：将渲染三角形队列的计数清零以顺利生成新的渲染队列。
+返回值：0；
+函数名：int QueueLength()
+输入参数：无；
+函数描述：返回渲染队列长度（仅作封装）。
+返回值：返回渲染队列长度；
+函数名：int push(int TriangleOrder)
+输入参数：三角形序号；
+函数描述：将对应序号的三角形压入渲染队列中（保证3D图像中遮挡正确）。
+返回值：0；
+函数名：int drawD3FullVectorMap()
+输入参数：无；
+函数描述：将所有3D模型中的对象利用MR系列函数绘制入缓存。先绘制地板和厂房，再绘制电线，绘制阴影，再绘制三角形队列。
+返回值：0；
+函数名：int DeleteLastCube()
+输入参数：无；
+函数描述：将上一个生成的立方体删除。（若上一次生成的对象是平行四边形则产生bug）
+返回值：0；
+函数名：int AddParallelogram(const int x1,const int y1,const int z1,const int x2,const int y2,const int z2,const int x3,const int y3,const int z3,unsigned int EdgeColor,unsigned int InnerColor)
+输入参数：三个点坐标，边界颜色，面颜色；
+函数描述：在orimap中添加一个平行四边形
+返回值：0；
+函数名：int AddCube(const int x1,const int y1,const int z1,const int x2,const int y2,const int z2,const int x3,const int y3,const int z3,const int x4,const int y4,const int z4,unsigned int EdgeColor,unsigned int InnerColor)
+输入参数：四个点坐标，边界颜色，面颜色；
+函数描述：在orimap中添加一个立方体（平行六面体也可）
+返回值：0；
+函数名：int AddCylinder(const int x1,const int y1,const int z1,const int height, const unsigned int EdgeNum, const int Radius,unsigned int EdgeColor,unsigned int InnerColor)
+输入参数：点坐标，高度，边数，半径，边界颜色，面颜色；
+函数描述：在orimap中添加一个类圆柱体（作为蓄电池组）
+返回值：0；
+函数名：int EditCube(const int BeginDotOrder, const int x1,const int y1,const int z1,const int x2,const int y2,const int z2,const int x3,const int y3,const int z3,const int x4,const int y4,const int z4)
+输入参数：立方体起始点序号，四组点坐标；
+函数描述：在orimap中修改一个立方体的坐标（以支持太阳能板的旋转）
+返回值：0；
+函数名：int D3MR()
+输入参数：无；
+函数描述：与Mimage中MR相同，仅作封装
+返回值：0；
+函数名：int clrWires()
+输入参数：无；
+函数描述：清除Wire计数
+返回值：0；
+函数名：int newWire(const int x1,const int z1,const int x2,const int z2, int FloorHeight)
+输入参数：两个等高的点坐标；
+函数描述：在orimap中添加一根电缆线
+返回值：0；
+函数名：int linkWires(const int x1,const int z1, int FloorHeight)
+输入参数：一个等高的点坐标；
+函数描述：在orimap中连接一根电缆线
+返回值：0；
+函数名：int ColorWires(int BlingStrength, int BlingNow)
+输入参数：闪烁强度，闪烁时间参数；
+函数描述：给电缆线对象染上合适的颜色以达到电流流动效果
+返回值：0；
+函数名：void ShadowType(int type)
+输入参数：阴影类型；
+函数描述：在orimap修改阴影类型
+返回值：0；
+函数名：int ReturnIOrderX(int i)
+输入参数：点序号；
+函数描述：返回点的x坐标
+返回值：返回点的x坐标；
+函数名：int ReturnIOrderY(int i)
+输入参数：点序号；
+函数描述：返回点的y坐标
+返回值：返回点的y坐标；
+函数名：int ReturnIOrderZ(int i)
+输入参数：点序号；
+函数描述：返回点的z坐标
+返回值：返回点的z坐标；
